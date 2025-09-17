@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     tools { 
-        maven 'maven-3.9.11'   // must match Global Tool Configuration name
+        maven 'maven3.9.11'   // must match the name in Global Tool Configuration
     }
 
     stages {
@@ -25,7 +25,7 @@ pipeline {
 
         stage('SonarQube Analysis') {
             steps {
-                withSonarQubeEnv('sonarqube') { // "sonarqube" must match your Jenkins SonarQube server config
+                withSonarQubeEnv('sonarqube') {
                     sh '''
                         mvn clean verify sonar:sonar \
                           -Dsonar.projectKey=devops-project-key \
