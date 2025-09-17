@@ -1,40 +1,47 @@
 pipeline {
     agent any
+
     tools { 
-        maven 'maven-3.9.11' 
+        maven 'maven-3.9.11'   // must match Global Tool Configuration name
     }
+
     stages {
         stage('Checkout git') {
             steps {
-               git branch: 'main', url: 'https://github.com/AbishekM001/week12-project.git'
+                git branch: 'main', url: 'https://github.com/AbishekM001/week12-project.git'
             }
         }
-        
-        stage ('Build & JUnit Test') {
+
+        stage('Build & JUnit Test') {
             steps {
-                sh 'mvn install' 
+                sh 'mvn clean install'
             }
             post {
-               success {
+                success {
                     junit 'target/surefire-reports/**/*.xml'
-                }   
+                }
             }
         }
-        stage('SonarQube Analysis'){
-            steps{
-                   withSonarQubeEnv('sonarqube') {
-                        sh 'mvn clean verify sonar:sonar \
-                        -Dsonar.projectKey=devops-project-key \
-                        -Dsonar.host.url=$sonarurl \
-                        -Dsonar.login=$sonarlogin'
-                    }
+
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv('sonarqube') { // "sonarqube" must match your Jenkins SonarQube server config
+                    sh '''
+                        mvn clean verify sonar:sonar \
+                          -Dsonar.projectKey=devops-project-key \
+                          -Dsonar.host.url=$SONAR_HOST_URL \
+                          -Dsonar.login=$SONAR_AUTH_TOKEN
+                    '''
+                }
             }
         }
-        stage('Deploy'){
-            steps{
-                sh 'timeout 60s java -jar /var/lib/jenkins/workspace/devopscicd/target/demo-0.0.1-SNAPSHOT.jar'
+
+        stage('Deploy') {
+            steps {
+                sh 'timeout 60s java -jar target/demo-0.0.1-SNAPSHOT.jar'
             }
-        }
         }
     }
+}
+
         
